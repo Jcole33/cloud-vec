@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "storage": {
+      "emulator": [
+        "read"
+      ],
+      "session": [
+        "create",
+        "read",
+        "delete"
+      ]
+    }
+  },
+  "lambdaLayers": []
+}
