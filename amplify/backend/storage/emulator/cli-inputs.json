@@ -1,0 +1,10 @@
+{
+  "resourceName": "emulator",
+  "tableName": "emulator",
+  "partitionKey": {
+    "fieldName": "id",
+    "fieldType": "string"
+  },
+  "gsi": [],
+  "triggerFunctions": []
+}

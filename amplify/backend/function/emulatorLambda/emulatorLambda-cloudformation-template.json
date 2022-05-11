@@ -1,6 +1,6 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "{\"createdOn\":\"Linux\",\"createdBy\":\"Amplify\",\"createdWith\":\"8.0.3\",\"stackType\":\"function-Lambda\",\"metadata\":{}}",
+  "Description": "{\"createdOn\":\"Linux\",\"createdBy\":\"Amplify\",\"createdWith\":\"8.1.0\",\"stackType\":\"function-Lambda\",\"metadata\":{}}",
   "Parameters": {
     "CloudWatchRule": {
       "Type": "String",
@@ -23,10 +23,6 @@
     "storageemulatorArn": {
       "Type": "String",
       "Default": "storageemulatorArn"
-    },
-    "storageemulatorStreamArn": {
-      "Type": "String",
-      "Default": "storageemulatorStreamArn"
     }
   },
   "Conditions": {
@@ -81,15 +77,6 @@
             },
             "REGION": {
               "Ref": "AWS::Region"
-            },
-            "STORAGE_EMULATOR_NAME": {
-              "Ref": "storageemulatorName"
-            },
-            "STORAGE_EMULATOR_ARN": {
-              "Ref": "storageemulatorArn"
-            },
-            "STORAGE_EMULATOR_STREAMARN": {
-              "Ref": "storageemulatorStreamArn"
             }
           }
         },
@@ -110,12 +97,12 @@
         "RoleName": {
           "Fn::If": [
             "ShouldNotCreateEnvResources",
-            "virtualemulationviacLambdaRole55c6ebcf",
+            "virtualemulationviacLambdaRoledea4383b",
             {
               "Fn::Join": [
                 "",
                 [
-                  "virtualemulationviacLambdaRole55c6ebcf",
+                  "virtualemulationviacLambdaRoledea4383b",
                   "-",
                   {
                     "Ref": "env"
@@ -192,52 +179,6 @@
                 "dynamodb:PutItem",
                 "dynamodb:UpdateItem",
                 "dynamodb:DeleteItem"
-              ],
-              "Resource": [
-                {
-                  "Ref": "storagesessionArn"
-                },
-                {
-                  "Fn::Join": [
-                    "/",
-                    [
-                      {
-                        "Ref": "storagesessionArn"
-                      },
-                      "index/*"
-                    ]
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      }
-    },
-    "AmplifyResourcesPolicy": {
-      "DependsOn": [
-        "LambdaExecutionRole"
-      ],
-      "Type": "AWS::IAM::Policy",
-      "Properties": {
-        "PolicyName": "amplify-lambda-execution-policy",
-        "Roles": [
-          {
-            "Ref": "LambdaExecutionRole"
-          }
-        ],
-        "PolicyDocument": {
-          "Version": "2012-10-17",
-          "Statement": [
-            {
-              "Effect": "Allow",
-              "Action": [
-                "dynamodb:Get*",
-                "dynamodb:BatchGetItem",
-                "dynamodb:List*",
-                "dynamodb:Describe*",
-                "dynamodb:Scan",
-                "dynamodb:Query"
               ],
               "Resource": [
                 {

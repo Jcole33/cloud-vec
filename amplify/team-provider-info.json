@@ -1,0 +1,31 @@
+{
+  "staging": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-virtualemulationviac-staging-230342-authRole",
+      "UnauthRoleArn": "arn:aws:iam::544827333043:role/amplify-virtualemulationviac-staging-230342-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::544827333043:role/amplify-virtualemulationviac-staging-230342-authRole",
+      "Region": "us-west-2",
+      "DeploymentBucketName": "amplify-virtualemulationviac-staging-230342-deployment",
+      "UnauthRoleName": "amplify-virtualemulationviac-staging-230342-unauthRole",
+      "StackName": "amplify-virtualemulationviac-staging-230342",
+      "StackId": "arn:aws:cloudformation:us-west-2:544827333043:stack/amplify-virtualemulationviac-staging-230342/48c5e330-c67e-11ec-8458-0a019d5a36e9",
+      "AmplifyAppId": "d1p6qnoucw1g2h",
+      "APIGatewayAuthURL": "https://s3.amazonaws.com/amplify-virtualemulationviac-staging-230342-deployment/amplify-cfn-templates/api/APIGatewayAuthStack.json"
+    },
+    "categories": {
+      "auth": {
+        "virtualemulationviaccf9b171b": {}
+      },
+      "function": {
+        "sessionLambda": {
+          "deploymentBucketName": "amplify-virtualemulationviac-staging-230342-deployment",
+          "s3Key": "amplify-builds/sessionLambda-73792f7933536f553357-build.zip"
+        },
+        "emulatorLambda": {
+          "deploymentBucketName": "amplify-virtualemulationviac-staging-230342-deployment",
+          "s3Key": "amplify-builds/emulatorLambda-782b7242514f6f51554b-build.zip"
+        }
+      }
+    }
+  }
+}

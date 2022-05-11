@@ -34,6 +34,10 @@ let tableName = "session";
 if (process.env.ENV && process.env.ENV !== "NONE") {
   tableName = tableName + '-' + process.env.ENV;
 }
+let emulatorTable = "emulator";
+if (process.env.ENV && process.env.ENV !== "NONE") {
+  emulatorTable = emulatorTable + '-' + process.env.ENV;
+}
 
 const partitionKeyName = "userId";
 const path = "/session";
@@ -105,7 +109,7 @@ type PostDefinition = MethodDefinition<SessionAPI, '/session', 'post'>
 
 app.post<PostDefinition['params'], PostDefinition['response'], PostDefinition['body'], PostDefinition['query']>(path, function (req, res) {
   const getItemParams: AWS.DynamoDB.DocumentClient.GetItemInput = {
-    TableName: tableName,
+    TableName: emulatorTable,
     Key: {
       id: req.body.emulatorId
     },
