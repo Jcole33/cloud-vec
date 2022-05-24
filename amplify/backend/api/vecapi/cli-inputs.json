@@ -1,26 +1,18 @@
 {
   "version": 1,
   "paths": {
-    "/emulator/{id}": {
-      "name": "/emulator/{id}",
-      "lambdaFunction": "emulatorLambda",
-      "permissions": {
-        "setting": "private",
-        "auth": [
-          "read"
-        ]
-      }
-    },
     "/session": {
       "name": "/session",
       "lambdaFunction": "sessionLambda",
       "permissions": {
-        "setting": "private",
-        "auth": [
-          "create",
-          "read",
-          "delete"
-        ]
+        "setting": "open"
+      }
+    },
+    "/emulator": {
+      "name": "/emulator",
+      "lambdaFunction": "emulatorLambda",
+      "permissions": {
+        "setting": "open"
       }
     }
   }

@@ -18,17 +18,21 @@ See the License for the specific language governing permissions and limitations 
 Amplify Params - DO NOT EDIT */
 
 import AWS from 'aws-sdk'
-import awsServerlessExpressMiddleware from 'aws-serverless-express/middleware'
+import awsServerlessExpressMiddleware from 'aws-serverless-express/middleware.js'
 import bodyParser from 'body-parser'
 import express from 'express'
 import {SessionAPI} from './SessionAPI'
 import { MethodDefinition } from './sharedTypes/APISpec'
-import {Emulator, Session} from './sharedTypes/models'
+import {Session} from './sharedTypes/models'
+import axios from "axios"
+import {password} from "./parsecPassword.js"
 
-
+axios.defaults.headers.post['Content-Type'] = 'application/json';
 AWS.config.update({ region: process.env.TABLE_REGION });
-
+if (!process.env.PROXY_PATH) throw "MISSING PROXY PATH"
+const proxyPath: string = process.env.PROXY_PATH
 const dynamodb = new AWS.DynamoDB.DocumentClient();
+const ec2 = new AWS.EC2({apiVersion: '2016-11-15'});
 
 let tableName = "session";
 if (process.env.ENV && process.env.ENV !== "NONE") {
@@ -53,7 +57,8 @@ app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Headers", "*")
   next()
 });
-
+/*
+can uncomment if we re-enable cognito login
 declare module 'express-serve-static-core' {
   interface Request {
     userId: string
@@ -61,26 +66,26 @@ declare module 'express-serve-static-core' {
 }
 app.use(function (req, res, next) {
   const userId = req.apiGateway?.event.requestContext.identity.cognitoIdentityId
+  req.userId = 'UNAUTHENTICATED'
   if (userId) {
-    req.userId = userId
   } else {
     return res.status(403).json({ success: false, message: 'Unauthenticated user' })
   }
   next()
-})
+})*/
 
 /*****************************************
 * HTTP Get method for get single object *
 *****************************************/
-type GetDefinition = MethodDefinition<SessionAPI, '/session', 'get'>
+type GetDefinition = MethodDefinition<SessionAPI, '/session/{id}', 'get'>
 
-app.get<GetDefinition['params'], GetDefinition['response'], GetDefinition['body'], GetDefinition['query']>(path, function (req, res) {
+app.get<GetDefinition['params'], GetDefinition['response'], GetDefinition['body'], GetDefinition['query']>(path + "/:id", function (req, res) {
  const getItemParams: AWS.DynamoDB.DocumentClient.GetItemInput = {
    TableName: tableName,
    Key: {
-     userId: req.userId
+     userId: req.params.id
    },
-   ProjectionExpression: 'emulatorId, info'
+   ProjectionExpression: 'userId, instanceId'
  }
  dynamodb.get(getItemParams, (err, data) => {
    if (err) {
@@ -90,14 +95,30 @@ app.get<GetDefinition['params'], GetDefinition['response'], GetDefinition['body'
      if (!data.Item) {
        return res.json({ success: false, message: 'item not found' })
      }
-     //hate doing this, but trying to tell typescript what the type of item is is just too much atm
-     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-     //@ts-ignore
-     const session: Session = data.Item
-     res.json({
-       success: true,
-       body: session
+     //@ts-expect-error
+     const session: Omit<Session, "instanceStatus"> = data.Item
+     ec2.describeInstanceStatus({InstanceIds: [session.instanceId]}, function(err, data) {
+      if (err) {
+        console.log("Error", err)
+        return res.json({ success: false, message: 'describe instance error' })
+      } else if (data && data.InstanceStatuses) {
+        const status = data.InstanceStatuses[0].InstanceState?.Name
+        if (status) {
+          res.json({
+            success: true,
+            body: {...session, instanceStatus: status}
+          })
+        } else {
+          res.status(500).json({
+            success: false,
+            message: "EC2 status error"
+          })
+        }
+        
+      }
      })
+
+     
    }
  })
 })
@@ -107,33 +128,26 @@ app.get<GetDefinition['params'], GetDefinition['response'], GetDefinition['body'
 *************************************/
 type PostDefinition = MethodDefinition<SessionAPI, '/session', 'post'>
 
-app.post<PostDefinition['params'], PostDefinition['response'], PostDefinition['body'], PostDefinition['query']>(path, function (req, res) {
-  const getItemParams: AWS.DynamoDB.DocumentClient.GetItemInput = {
-    TableName: emulatorTable,
-    Key: {
-      id: req.body.emulatorId
-    },
-    ProjectionExpression: 'id, #name, info',
-    ExpressionAttributeNames: {
-      '#name': 'name'
-    }
-  }
-  dynamodb.get(getItemParams, (err, data) => {
-    if (err) {
-      res.statusCode = 500
-      return res.json({ success: false, message: 'dynamodb error', error: err.message })
-    } else {
-      if (!data.Item) {
-        return res.json({ success: false, message: 'emulator not found' })
+app.post<PostDefinition['params'], PostDefinition['response'], PostDefinition['body'], PostDefinition['query']>(path, async function (req, res) {
+  try {
+      if (!req.body.emulatorId) return res.status(400).json({success: false, message: "Missing emulatorId in request body"})
+      const instanceParams = {
+          ImageId: req.body.emulatorId, 
+          InstanceType: 't2.micro',
+          KeyName: 'cloud',
+          MinCount: 1,
+          MaxCount: 1
       }
-      //hate doing this, but trying to tell typescript what the type of item is is just too much atm
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      //@ts-ignore
-      const emulator: Emulator = data.Item
-      const session: Session = {
-        userId: req.userId,
-        emulatorId: req.body.emulatorId,
-        info: emulator.info
+      const instanceData = await ec2.runInstances(instanceParams).promise();
+      if (!instanceData.Instances || !instanceData.Instances[0].InstanceId) throw "Instance Start Error!"
+      const instanceId =  instanceData.Instances[0].InstanceId 
+      //get parsec session id through proxy
+      const sessionResponse = await axios.post(proxyPath, {
+        password: password
+      });
+      const session: Omit<Session, "instanceStatus"> = {
+        userId: sessionResponse.data.body.session_id,
+        instanceId: instanceId
       }
       const putItemParams: AWS.DynamoDB.DocumentClient.PutItemInput = {
         TableName: tableName,
@@ -145,34 +159,71 @@ app.post<PostDefinition['params'], PostDefinition['response'], PostDefinition['b
           res.statusCode = 500
           res.json({ success: false, message: 'dynamodb error', error: err })
         } else {
-          res.json({ success: true, body: 'success' })
+          res.json({ success: true, body: {sessionId: sessionResponse.data.body.session_id} })
         }
       })
+    } catch(error) {
+      res.statusCode = 500
+      res.json({success: false, message: 'Session create error', error: error})
     }
-  })
- 
 })
 
 /**************************************
 * HTTP remove method to delete object *
 ***************************************/
-type DeleteDefinition = MethodDefinition<SessionAPI, '/session', 'delete'>
+type DeleteDefinition = MethodDefinition<SessionAPI, '/session/{id}', 'delete'>
 
-app.delete<DeleteDefinition['params'], DeleteDefinition['response'], DeleteDefinition['body'], DeleteDefinition['query']>(path, function (req, res) {
- const removeItemParams: AWS.DynamoDB.DocumentClient.DeleteItemInput = {
-   TableName: tableName,
-   Key: {
-     userId: req.userId
-   }
- }
- dynamodb.delete(removeItemParams, (err) => {
-   if (err) {
-     res.statusCode = 500
-     res.json({ success: false, message: 'dynamodb error', error: err })
-   } else {
-     res.json({ success: true, body: 'success' })
-   }
- })
+app.delete<DeleteDefinition['params'], DeleteDefinition['response'], DeleteDefinition['body'], DeleteDefinition['query']>(path + "/:id", function (req, res) {
+  const getItemParams: AWS.DynamoDB.DocumentClient.GetItemInput = {
+    TableName: tableName,
+    Key: {
+      userId: req.params.id
+    },
+    ProjectionExpression: 'userId, instanceId'
+  }
+  dynamodb.get(getItemParams, (err, data) => {
+    if (err) {
+      return res.status(500).json({ success: false, message: 'dynamodb error', error: err.message })
+    } else {
+      if (!data.Item) {
+        return res.status(500).json({ success: false, message: 'item not found' })
+      }
+      //@ts-ignore
+      const session: Session = data.Item
+      const params = {
+        InstanceIds: [session.instanceId]
+      }
+      ec2.stopInstances(params, function(err, data) {
+        if (err) {
+          console.log("Error", err)
+          return res.json({ success: false, message: 'stop instance error' })
+        } else if (data) {
+          console.log("Success", data.StoppingInstances)
+          ec2.terminateInstances(params, function(err, data) {
+            if (err) {
+              console.log("Error", err)
+              return res.json({ success: false, message: 'terminate instance error' })
+            } else if (data) {
+              const removeItemParams: AWS.DynamoDB.DocumentClient.DeleteItemInput = {
+                TableName: tableName,
+                Key: {
+                  userId: req.params.id
+                }
+              }
+              dynamodb.delete(removeItemParams, (err) => {
+                if (err) {
+                  res.statusCode = 500
+                  res.json({ success: false, message: 'dynamodb error', error: err })
+                } else {
+                  res.json({ success: true, body: 'success' })
+                }
+              })
+            }
+          })
+        }
+      });
+    }
+  })
 })
 
 app.listen(3000, function () {

@@ -46,7 +46,7 @@ app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Headers", "*")
   next()
 });
-
+/*
 declare module 'express-serve-static-core' {
   interface Request {
     userId: string
@@ -61,7 +61,7 @@ app.use(function (req, res, next) {
   }
   next()
 })
-
+*/
 /********************************
  * HTTP Get method for list objects *
  ********************************/
@@ -71,12 +71,12 @@ app.use(function (req, res, next) {
  app.get<ListDefinition['params'], ListDefinition['response'], ListDefinition['body'], ListDefinition['query']>(path, function (req, res) {
   const queryParams: AWS.DynamoDB.DocumentClient.QueryInput = {
     TableName: tableName,
-    ProjectionExpression: 'id, #name, info',
+    ProjectionExpression: 'id, #name',
     ExpressionAttributeNames: {
       '#name': 'name'
     }
   }
-  dynamodb.query(queryParams, (err, data) => {
+  dynamodb.scan(queryParams, (err, data) => {
     if (err) {
       res.statusCode = 500;
       res.json({success: false, message: 'Could not load items', error: err});

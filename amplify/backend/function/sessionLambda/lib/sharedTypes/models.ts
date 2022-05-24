@@ -1,11 +1,10 @@
 export interface Emulator {
-    id: Readonly<string>
-    name: Readonly<string>
-    info: Readonly<Record<string, any>>
+    id: string
+    name: string
 }
 
 export interface Session {
-    userId: Readonly<string>
-    emulatorId: Readonly<string>
-    info: Readonly<Record<string, any>>
+    userId: string
+    instanceId: string
+    instanceStatus: string
 }

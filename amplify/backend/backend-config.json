@@ -36,18 +36,6 @@
       "dependsOn": [
         {
           "category": "storage",
-          "resourceName": "session",
-          "attributes": [
-            "Name",
-            "Arn"
-          ],
-          "attributeEnvMap": {
-            "Name": "TABLE_NAME",
-            "Arn": "TABLE_ARN"
-          }
-        },
-        {
-          "category": "storage",
           "resourceName": "emulator",
           "attributes": [
             "Name",
@@ -65,6 +53,11 @@
           ]
         }
       ]
+    },
+    "createParsecSession": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
     }
   },
   "auth": {
@@ -100,7 +93,7 @@
       "dependsOn": [
         {
           "category": "function",
-          "resourceName": "emulatorLambda",
+          "resourceName": "sessionLambda",
           "attributes": [
             "Name",
             "Arn"
@@ -108,7 +101,7 @@
         },
         {
           "category": "function",
-          "resourceName": "sessionLambda",
+          "resourceName": "emulatorLambda",
           "attributes": [
             "Name",
             "Arn"

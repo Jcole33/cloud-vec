@@ -11,5 +11,14 @@
       ]
     }
   },
-  "lambdaLayers": []
+  "lambdaLayers": [],
+  "environmentVariableList": [
+    {
+      "cloudFormationParameterName": "proxyPath",
+      "environmentVariableName": "PROXY_PATH"
+    }
+  ],
+  "secretNames": [
+    "PARSEC_PASSWORD"
+  ]
 }

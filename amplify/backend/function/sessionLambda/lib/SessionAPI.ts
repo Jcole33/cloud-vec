@@ -3,18 +3,25 @@ import { Session } from './sharedTypes/models'
 
 interface API extends APISpec {
     '/session': {
-        //get details on a running emulator session
-        get: {
-            response: Session
-        }
         //create a new emulator session
         post: {
-            //what should be included in the body of the request
             body: {emulatorId: string}
-            response: string
+            response: {sessionId: string}
+        }
+    }
+    '/session/{id}': {
+        //get details on a running emulator session
+        get: {
+            params: {
+                id: string
+            }
+            response: Session
         }
         //end an emulator session
         delete: {
+            params: {
+                id: string
+            }
             response: string
         }
     }
