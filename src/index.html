@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang='en'>
+
+<head>
+	<meta charset='utf-8'>
+	<title>Parsec Web SDK Example</title>
+	<link rel='stylesheet' href='style.css'>
+	<!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous"> -->
+
+	<!-- Parsec Web SDK -->
+	<!-- The development server will redirect this to /sdk/web of the git repo -->
+	<script type='text/javascript' src='../sdk/parsec.js'></script>
+</head>
+
+<body>
+	<div class="jumbotron d-flex justify-content-center">
+		<h1>VEC</h1>      
+	</div>
+	<audio></audio>
+	<div class='video-container'>
+		<video></video>
+	</div>
+
+		<table class='table table-striped' id='server-list'>
+		</table>
+	
+		<table class='table table-striped' id='emulator-list'>
+		</table>
+		
+	<div class="d-flex justify-content-center" id="auth">
+		<Button class='btn btn-success' id="connect" onclick="connect()">Connect</Button>
+		<!-- <Button  class='btn btn-danger' onclick="shutdown()">Logout</Button> -->
+	</div>
+	
+	<!-- <div class="d-flex justify-content-center" id="logout">
+		
+	</div> -->
+
+	<script type='text/javascript' src='/main.js'></script>
+	<script>UI();</script>
+</body>
+
+</html>

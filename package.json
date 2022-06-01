@@ -6,7 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "amplify:emulatorLambda": "cd amplify/backend/function/emulatorLambda && tsc -p ./tsconfig.json && cd -",
-    "amplify:sessionLambda": "cd amplify/backend/function/sessionLambda && tsc -p ./tsconfig.json && cd -"
+    "amplify:sessionLambda": "cd amplify/backend/function/sessionLambda && tsc -p ./tsconfig.json && cd -",
+    "amplify:createParsecSession": "cd amplify/backend/function/createParsecSession && tsc -p ./tsconfig.json && cd -"
+
   },
   "author": "",
   "license": "ISC",

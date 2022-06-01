@@ -84,7 +84,6 @@ app.use(function (req, res, next) {
       if (!data.Items) {
         return res.json({ success: false, message: 'item not found' })
       }
-      //hate doing this, but trying to tell typescript what the type of item is is just too much atm
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore
       const emulators: Emulator[] = data.Items
@@ -120,7 +119,6 @@ app.use(function (req, res, next) {
       if (!data.Item) {
         return res.json({ success: false, message: 'item not found' })
       }
-      //hate doing this, but trying to tell typescript what the type of item is is just too much atm
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore
       const emulator: Emulator = data.Item

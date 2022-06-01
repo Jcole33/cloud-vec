@@ -43,6 +43,10 @@
     "secretsPathAmplifyAppId": {
       "Type": "String"
     },
+    "functioncreateParsecSessionName": {
+      "Type": "String",
+      "Default": "functioncreateParsecSessionName"
+    },
     "proxyPath": {
       "Type": "String"
     }
@@ -139,6 +143,9 @@
                   "PARSEC_PASSWORD"
                 ]
               ]
+            },
+            "FUNCTION_CREATEPARSECSESSION_NAME": {
+              "Ref": "functioncreateParsecSessionName"
             },
             "PROXY_PATH": {
               "Ref": "proxyPath"
@@ -334,6 +341,39 @@
                         "Ref": "storagesessionArn"
                       },
                       "index/*"
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "lambda:Create*",
+                "lambda:Put*",
+                "lambda:Add*",
+                "lambda:Get*",
+                "lambda:List*",
+                "lambda:Invoke*",
+                "lambda:Update*"
+              ],
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:lambda:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":",
+                      {
+                        "Ref": "AWS::AccountId"
+                      },
+                      ":function:",
+                      {
+                        "Ref": "functioncreateParsecSessionName"
+                      }
                     ]
                   ]
                 }

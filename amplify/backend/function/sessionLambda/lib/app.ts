@@ -25,7 +25,6 @@ import {SessionAPI} from './SessionAPI'
 import { MethodDefinition } from './sharedTypes/APISpec'
 import {Session} from './sharedTypes/models'
 import axios from "axios"
-import {password} from "./parsecPassword.js"
 
 axios.defaults.headers.post['Content-Type'] = 'application/json';
 AWS.config.update({ region: process.env.TABLE_REGION });
@@ -33,6 +32,7 @@ if (!process.env.PROXY_PATH) throw "MISSING PROXY PATH"
 const proxyPath: string = process.env.PROXY_PATH
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 const ec2 = new AWS.EC2({apiVersion: '2016-11-15'});
+const lambda = new AWS.Lambda();
 
 let tableName = "session";
 if (process.env.ENV && process.env.ENV !== "NONE") {
@@ -142,12 +142,15 @@ app.post<PostDefinition['params'], PostDefinition['response'], PostDefinition['b
       if (!instanceData.Instances || !instanceData.Instances[0].InstanceId) throw "Instance Start Error!"
       const instanceId =  instanceData.Instances[0].InstanceId 
       //get parsec session id through proxy
-      const sessionResponse = await axios.post(proxyPath, {
-        password: password
-      });
+      if (!process.env.FUNCTION_CREATEPARSECSESSION_NAME) throw "MISSING PARSEC CREATE FUNCTION"
+      const sessionResponse = await lambda.invoke({FunctionName: process.env.FUNCTION_CREATEPARSECSESSION_NAME}).promise()
+      const responsePayload = sessionResponse.Payload
+      if (!responsePayload) throw "Invalid session response"
+      const responseData = JSON.parse(responsePayload.toString())
       const session: Omit<Session, "instanceStatus"> = {
-        userId: sessionResponse.data.body.session_id,
-        instanceId: instanceId
+        userId: responseData.body.session_id,
+        instanceId: instanceId, 
+        info: responseData
       }
       const putItemParams: AWS.DynamoDB.DocumentClient.PutItemInput = {
         TableName: tableName,
@@ -159,7 +162,7 @@ app.post<PostDefinition['params'], PostDefinition['response'], PostDefinition['b
           res.statusCode = 500
           res.json({ success: false, message: 'dynamodb error', error: err })
         } else {
-          res.json({ success: true, body: {sessionId: sessionResponse.data.body.session_id} })
+          res.json({ success: true, body: {sessionId: responseData.body.session_id} })
         }
       })
     } catch(error) {

@@ -51,6 +51,13 @@
             "Arn",
             "StreamArn"
           ]
+        },
+        {
+          "category": "function",
+          "resourceName": "createParsecSession",
+          "attributes": [
+            "Name"
+          ]
         }
       ]
     },

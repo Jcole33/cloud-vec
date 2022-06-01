@@ -9,6 +9,13 @@
         "read",
         "delete"
       ]
+    },
+    "function": {
+      "createParsecSession": [
+        "create",
+        "read",
+        "update"
+      ]
     }
   },
   "lambdaLayers": [],

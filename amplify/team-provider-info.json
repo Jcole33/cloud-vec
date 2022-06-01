@@ -19,13 +19,18 @@
       "function": {
         "sessionLambda": {
           "deploymentBucketName": "amplify-virtualemulationviac-staging-230342-deployment",
-          "s3Key": "amplify-builds/sessionLambda-77416436587368333561-build.zip",
+          "s3Key": "amplify-builds/sessionLambda-7a6c5252526a6b744b53-build.zip",
           "secretsPathAmplifyAppId": "d1p6qnoucw1g2h",
           "proxyPath": "https://68a5-129-210-115-229.ngrok.io/proxy"
         },
         "emulatorLambda": {
           "deploymentBucketName": "amplify-virtualemulationviac-staging-230342-deployment",
           "s3Key": "amplify-builds/emulatorLambda-426c34515064685a4e4a-build.zip"
+        },
+        "createParsecSession": {
+          "secretsPathAmplifyAppId": "d1p6qnoucw1g2h",
+          "deploymentBucketName": "amplify-virtualemulationviac-staging-230342-deployment",
+          "s3Key": "amplify-builds/createParsecSession-4b616475347461653568-build.zip"
         }
       }
     }

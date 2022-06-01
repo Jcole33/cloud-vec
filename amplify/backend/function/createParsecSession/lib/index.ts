@@ -1,17 +1,24 @@
 
+import axios from "axios"
+import {password} from "./parsecPassword.js"
 
-/**
- * @type {import('@types/aws-lambda').APIGatewayProxyHandler}
- */
-exports.handler = async (event) => {
-    console.log(`EVENT: ${JSON.stringify(event)}`);
-    return {
-        statusCode: 200,
-    //  Uncomment below to enable CORS requests
-    //  headers: {
-    //      "Access-Control-Allow-Origin": "*",
-    //      "Access-Control-Allow-Headers": "*"
-    //  }, 
-        body: JSON.stringify('Hello from Lambda!'),
-    };
-};
+export const handler = async (): Promise<{success: true, body: unknown} | {success: false, message: string}> => {
+    try {
+
+        const sessionResponse = await axios({
+            method: 'post',
+            url: 'https://kessel-api.parsecgaming.com/v1/auth',
+            headers: {
+              'Content-Type': 'application/json'
+            }, 
+            data: {
+              email: "unluckywizard33@gmail.com",
+              password: password
+            }
+        })
+        return { success: true, body: sessionResponse.data }
+    } catch(error) {
+        console.log(error)
+        return {success: false, message: "login error"}
+    }
+}
